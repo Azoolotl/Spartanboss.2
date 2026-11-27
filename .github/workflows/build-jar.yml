@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - '.github/workflows/**'
+      - '**/*.zip'
       - '**/*.gradle'
       - '**/*.gradle.kts'
       - 'gradle.properties'
@@ -13,6 +15,8 @@ on:
       - 'fabric.mod.json'
   pull_request:
     paths:
+      - '.github/workflows/**'
+      - '**/*.zip'
       - '**/*.gradle'
       - '**/*.gradle.kts'
       - 'gradle.properties'
@@ -48,18 +52,34 @@ jobs:
         with:
           gradle-version: 'current'
 
-      - name: Build with Gradle Wrapper when available
+      - name: Extract uploaded source archive
         shell: bash
         run: |
           set -euo pipefail
+          archive="$(find . -maxdepth 2 -type f -name '*.zip' ! -path './.git/*' -print -quit)"
+          if [[ -z "${archive}" ]]; then
+            echo "::error::No source ZIP archive found in the repository."
+            exit 1
+          fi
+          mkdir -p build-input
+          unzip -q "${archive}" -d build-input
+
+      - name: Build Fabric mod
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_file="$(find build-input -type f \\( -name build.gradle -o -name build.gradle.kts \\) -print -quit)"
+          if [[ -z "${build_file}" ]]; then
+            echo "::error::The uploaded ZIP does not contain build.gradle or build.gradle.kts."
+            exit 1
+          fi
+          project_dir="$(dirname "${build_file}")"
+          cd "${project_dir}"
           if [[ -f ./gradlew ]]; then
             chmod +x ./gradlew
             ./gradlew --no-daemon clean build
-          elif [[ -f ./build.gradle || -f ./build.gradle.kts ]]; then
-            gradle --no-daemon clean build
           else
-            echo "::error::No Gradle build file found at repository root. Add the mod source project (including build.gradle or build.gradle.kts) and run this workflow again."
-            exit 1
+            gradle --no-daemon clean build
           fi
 
       - name: Upload compiled JARs
