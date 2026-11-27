@@ -81,6 +81,9 @@ jobs:
           echo "Gradle configuration in uploaded project:"
           grep -R -n -E 'loom|fabric-loom|minecraft_version|loader_version' build-input --include='*.gradle' --include='*.gradle.kts' --include='*.toml' --include='gradle.properties' --include='*.json' || true
           cd "${project_dir}"
+          if grep -q "1.14-SNAPSHOT" build.gradle 2>/dev/null; then
+            sed -i "s/1.14-SNAPSHOT/1.19.4/g" build.gradle
+          fi
           if [[ -f ./gradlew ]]; then
             chmod +x ./gradlew
             ./gradlew --no-daemon clean build
