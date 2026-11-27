@@ -85,6 +85,13 @@ jobs:
           sed -n '1,220p' build.gradle
           if [[ -f gradle.properties ]]; then cat gradle.properties; fi
           if [[ -f settings.gradle ]]; then cat settings.gradle; fi
+          echo "Client-only references in common source:"
+          grep -R -n -E 'net\\.minecraft\\.client|GeoArmorRenderer|GeoEntityRenderer|GeoModel|GeoRender' src/main/java || true
+          echo "Java source inventory:"
+          find src -type f -name '*.java' | sort
+          if [[ -f src/main/java/com/kodari/spartanboss/GabrielEntity.java ]]; then
+            sed -i 's/world\\.spawnParticles(ParticleTypes\\.FLASH, markedX, markedY + 1, markedZ, 1, 0, 0, 0, 0);/world.spawnParticles(net.minecraft.particle.TintedParticleEffect.create(ParticleTypes.FLASH, 0xFFFFFF), markedX, markedY + 1, markedZ, 1, 0, 0, 0, 0);/' src/main/java/com/kodari/spartanboss/GabrielEntity.java
+          fi
           if grep -q "1.14-SNAPSHOT" build.gradle 2>/dev/null; then
             sed -i "s/1.14-SNAPSHOT/1.19.4/g" build.gradle
           fi
