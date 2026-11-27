@@ -11,7 +11,6 @@ on:
       - 'settings.gradle*'
       - 'src/**'
       - 'fabric.mod.json'
-      - '.github/workflows/build-jar.yml'
   pull_request:
     paths:
       - '**/*.gradle'
