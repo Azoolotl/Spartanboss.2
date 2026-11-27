@@ -67,9 +67,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          build_file="$(find build-input -type f \\( -name build.gradle -o -name build.gradle.kts \\) -print -quit)"
+          build_file="$(find build-input -type f -name 'build.gradle' -print -quit)"
+          if [[ -z "${build_file}" ]]; then
+            build_file="$(find build-input -type f -name 'build.gradle.kts' -print -quit)"
+          fi
           if [[ -z "${build_file}" ]]; then
             echo "::error::The uploaded ZIP does not contain build.gradle or build.gradle.kts."
+            echo "Archive contents:"
+            find build-input -maxdepth 4 -type f | head -100
             exit 1
           fi
           project_dir="$(dirname "${build_file}")"
