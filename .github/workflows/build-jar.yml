@@ -41,10 +41,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -81,6 +81,10 @@ jobs:
           echo "Gradle configuration in uploaded project:"
           grep -R -n -E 'loom|fabric-loom|minecraft_version|loader_version' build-input --include='*.gradle' --include='*.gradle.kts' --include='*.toml' --include='gradle.properties' --include='*.json' || true
           cd "${project_dir}"
+          echo "Build configuration:"
+          sed -n '1,220p' build.gradle
+          if [[ -f gradle.properties ]]; then cat gradle.properties; fi
+          if [[ -f settings.gradle ]]; then cat settings.gradle; fi
           if grep -q "1.14-SNAPSHOT" build.gradle 2>/dev/null; then
             sed -i "s/1.14-SNAPSHOT/1.19.4/g" build.gradle
           fi
